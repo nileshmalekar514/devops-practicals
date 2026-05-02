@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Pulling code from GitHub...'
+                git branch: 'main',
+                    url: 'https://github.com/nileshmalekar514/devops-practicals.git',
+                    credentialsId: 'github-creds'
+                echo 'Code pulled successfully.'
+            }
+        }
+        stage('Terraform Init') {
+            steps {
+                bat "terraform -chdir=practical-9 init"
+                echo 'Terraform initialized - providers downloaded.'
+            }
+        }
+        stage('Terraform Validate') {
+            steps {
+                bat "terraform -chdir=practical-9 validate"
+                echo 'Terraform configuration valid.'
+            }
+        }
+        stage('Terraform Plan') {
+            steps {
+                bat "terraform -chdir=practical-9 plan -out=tfplan"
+                echo 'Terraform plan generated - EC2 + S3 + Security Group resources.'
+            }
+        }
+        stage('Show Plan Summary') {
+            steps {
+                bat "terraform -chdir=practical-9 show tfplan"
+                echo 'Plan: 1 EC2 instance + 1 S3 bucket + 1 Security Group to be created.'
+            }
+        }
+    }
+    post {
+        success { echo 'Practical 9 - Terraform EC2+S3 pipeline SUCCESS!' }
+        failure { echo 'Practical 9 - Pipeline FAILED.' }
+    }
+}

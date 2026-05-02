@@ -1,0 +1,24 @@
+services:
+  web:
+    build: .
+    container_name: flask_web_p5
+    ports:
+      - "5003:5000"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache_p5
+    ports:
+      - "6381:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge

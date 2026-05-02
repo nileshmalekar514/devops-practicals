@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Pulling code from GitHub...'
+                git branch: 'main',
+                    url: 'https://github.com/nileshmalekar514/devops-practicals.git',
+                    credentialsId: 'github-creds'
+                echo 'Code pulled successfully.'
+            }
+        }
+        stage('Start Minikube') {
+            steps {
+                bat "minikube start --driver=docker 2>&1 || echo Minikube already running"
+                bat "minikube status"
+                echo 'Minikube cluster ready.'
+            }
+        }
+        stage('Build & Load Image') {
+            steps {
+                bat "docker build -t flask-practical4:latest ./practical-4"
+                bat "minikube image load flask-practical4:latest"
+                echo 'Image loaded into Minikube.'
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat "kubectl apply -f practical-7/deployment.yaml"
+                bat "kubectl apply -f practical-7/service.yaml"
+                bat "kubectl rollout status deployment/flask-deployment --timeout=90s"
+                bat "kubectl get pods -l app=flask-app"
+                echo 'Flask app deployed to Kubernetes.'
+            }
+        }
+        stage('Apply HPA') {
+            steps {
+                bat "kubectl apply -f practical-7/hpa.yaml"
+                bat "kubectl get hpa flask-hpa"
+                echo 'Horizontal Pod Autoscaler configured (min=1, max=5, cpu=50%).'
+            }
+        }
+        stage('Verify Deployment') {
+            steps {
+                bat "kubectl get pods"
+                bat "kubectl get deployments"
+                bat "kubectl get hpa"
+                bat "kubectl get services"
+                echo 'All K8s resources verified.'
+            }
+        }
+    }
+    post {
+        success { echo 'Practical 7 - Kubernetes HPA pipeline SUCCESS!' }
+        failure { echo 'Practical 7 - Pipeline FAILED.' }
+    }
+}
