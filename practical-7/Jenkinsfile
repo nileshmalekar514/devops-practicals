@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        KUBECONFIG = "C:\\ProgramData\\kube\\config"
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -9,19 +12,16 @@ pipeline {
                 echo 'Code pulled from GitHub.'
             }
         }
-        stage('Start Minikube') {
+        stage('Verify Cluster') {
             steps {
-                script {
-                    bat(script: "minikube start --driver=docker", returnStatus: true)
-                    bat(script: "minikube status", returnStatus: true)
-                }
+                bat "kubectl get nodes"
                 echo 'Minikube cluster ready.'
             }
         }
         stage('Build and Load Image') {
             steps {
                 bat "docker build -t flask-practical4:latest ./practical-4"
-                bat "minikube image load flask-practical4:latest"
+                bat "docker save flask-practical4:latest | docker exec -i minikube ctr images import -"
                 echo 'Image loaded into Minikube.'
             }
         }
