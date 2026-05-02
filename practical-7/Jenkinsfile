@@ -21,7 +21,7 @@ pipeline {
         stage('Build and Load Image') {
             steps {
                 bat "docker build -t flask-practical4:latest ./practical-4"
-                bat "docker save flask-practical4:latest | docker exec -i minikube ctr images import -"
+                bat "docker save flask-practical4:latest | docker exec -i minikube ctr -n k8s.io images import -"
                 echo 'Image loaded into Minikube.'
             }
         }
