@@ -13,8 +13,9 @@ pipeline {
             steps {
                 script {
                     bat(script: "minikube start --driver=docker", returnStatus: true)
+                    bat(script: "minikube status", returnStatus: true)
                 }
-                bat "minikube status"
+                echo 'Minikube cluster ready.'
             }
         }
         stage('Load Image') {
