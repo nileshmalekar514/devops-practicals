@@ -6,12 +6,14 @@ pipeline {
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled from GitHub successfully.'
+                echo 'Code pulled from GitHub.'
             }
         }
         stage('Start Minikube') {
             steps {
-                bat "minikube start --driver=docker 2>&1 || echo Minikube already running"
+                script {
+                    bat(script: "minikube start --driver=docker", returnStatus: true)
+                }
                 bat "minikube status"
                 echo 'Minikube cluster ready.'
             }
@@ -34,9 +36,9 @@ pipeline {
         stage('Apply HPA') {
             steps {
                 bat "kubectl apply -f practical-7/hpa.yaml"
-                bat "ping -n 5 127.0.0.1 >nul"
+                sleep(time: 5, unit: 'SECONDS')
                 bat "kubectl get hpa flask-hpa"
-                echo 'Horizontal Pod Autoscaler configured.'
+                echo 'HPA configured - min=1 max=5 cpu=50%.'
             }
         }
         stage('Verify') {

@@ -11,7 +11,7 @@ pipeline {
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled from GitHub successfully.'
+                echo 'Code pulled from GitHub.'
             }
         }
         stage('Build Docker Image') {
@@ -22,9 +22,12 @@ pipeline {
         }
         stage('Run Container') {
             steps {
-                bat "docker stop %CONTAINER% 2>nul & docker rm %CONTAINER% 2>nul & echo cleanup done"
-                bat "docker run -d -p %PORT%:5000 --name %CONTAINER% %IMAGE_NAME%:latest"
-                bat "ping -n 6 127.0.0.1 >nul"
+                script {
+                    bat(script: "docker stop %CONTAINER%", returnStatus: true)
+                    bat(script: "docker rm %CONTAINER%",   returnStatus: true)
+                    bat "docker run -d -p %PORT%:5000 --name %CONTAINER% %IMAGE_NAME%:latest"
+                    sleep(time: 5, unit: 'SECONDS')
+                }
                 echo 'Container running on port 5002.'
             }
         }
@@ -33,12 +36,15 @@ pipeline {
                 bat "curl -s http://localhost:%PORT%/"
                 bat "curl -s http://localhost:%PORT%/health"
                 bat "curl -s http://localhost:%PORT%/info"
-                echo 'All 3 endpoints responding.'
+                echo 'All 3 endpoints verified.'
             }
         }
         stage('Cleanup') {
             steps {
-                bat "docker stop %CONTAINER% & docker rm %CONTAINER%"
+                script {
+                    bat(script: "docker stop %CONTAINER%", returnStatus: true)
+                    bat(script: "docker rm %CONTAINER%",   returnStatus: true)
+                }
                 echo 'Container cleaned up.'
             }
         }

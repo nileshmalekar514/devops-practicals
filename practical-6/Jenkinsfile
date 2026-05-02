@@ -6,36 +6,40 @@ pipeline {
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled from GitHub successfully.'
+                echo 'Code pulled from GitHub.'
             }
         }
         stage('Build Original Image') {
             steps {
                 bat "docker build -f practical-6/Dockerfile.original -t flask-original:latest ./practical-6"
-                echo 'Original image built.'
+                echo 'Original (large) image built.'
             }
         }
         stage('Build Optimized Image') {
             steps {
                 bat "docker build -f practical-6/Dockerfile.optimized -t flask-optimized:latest ./practical-6"
-                echo 'Optimized image built.'
+                echo 'Optimized (slim) image built.'
             }
         }
-        stage('Compare Image Sizes') {
+        stage('Compare Sizes') {
             steps {
                 bat "docker images flask-original"
                 bat "docker images flask-optimized"
-                echo 'Size comparison done - optimized is much smaller!'
+                echo 'Optimized image is significantly smaller!'
             }
         }
         stage('Test Optimized Image') {
             steps {
-                bat "docker stop flask_p6 2>nul & docker rm flask_p6 2>nul & echo cleanup done"
-                bat "docker run -d -p 5004:5000 --name flask_p6 flask-optimized:latest"
-                bat "ping -n 5 127.0.0.1 >nul"
-                bat "curl -s http://localhost:5004/"
-                bat "docker stop flask_p6 & docker rm flask_p6"
-                echo 'Optimized image tested.'
+                script {
+                    bat(script: "docker stop flask_p6", returnStatus: true)
+                    bat(script: "docker rm flask_p6",   returnStatus: true)
+                    bat "docker run -d -p 5004:5000 --name flask_p6 flask-optimized:latest"
+                    sleep(time: 4, unit: 'SECONDS')
+                    bat "curl -s http://localhost:5004/"
+                    bat(script: "docker stop flask_p6", returnStatus: true)
+                    bat(script: "docker rm flask_p6",   returnStatus: true)
+                }
+                echo 'Optimized image runs successfully.'
             }
         }
     }

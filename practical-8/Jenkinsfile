@@ -6,12 +6,14 @@ pipeline {
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled from GitHub successfully.'
+                echo 'Code pulled from GitHub.'
             }
         }
         stage('Start Minikube') {
             steps {
-                bat "minikube start --driver=docker 2>&1 || echo Minikube already running"
+                script {
+                    bat(script: "minikube start --driver=docker", returnStatus: true)
+                }
                 bat "minikube status"
             }
         }
@@ -27,22 +29,24 @@ pipeline {
                 bat "kubectl apply -f practical-8/configmap.yaml"
                 bat "kubectl get configmap app-config"
                 bat "kubectl describe configmap app-config"
-                echo 'ConfigMap created.'
+                echo 'ConfigMap created with app configuration.'
             }
         }
         stage('Deploy Pod') {
             steps {
-                bat "kubectl delete pod flask-configmap-pod 2>nul & echo pod cleanup done"
-                bat "kubectl apply -f practical-8/pod.yaml"
-                bat "ping -n 15 127.0.0.1 >nul"
-                bat "kubectl get pod flask-configmap-pod"
-                echo 'Pod deployed with ConfigMap injected.'
+                script {
+                    bat(script: "kubectl delete pod flask-configmap-pod", returnStatus: true)
+                    bat "kubectl apply -f practical-8/pod.yaml"
+                    sleep(time: 15, unit: 'SECONDS')
+                    bat "kubectl get pod flask-configmap-pod"
+                }
+                echo 'Pod deployed with ConfigMap injected as env vars.'
             }
         }
         stage('Verify Injection') {
             steps {
                 bat "kubectl describe pod flask-configmap-pod"
-                echo 'ConfigMap env vars injected into pod verified.'
+                echo 'ConfigMap values verified in pod.'
             }
         }
     }

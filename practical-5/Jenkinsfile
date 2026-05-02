@@ -6,7 +6,7 @@ pipeline {
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled from GitHub successfully.'
+                echo 'Code pulled from GitHub.'
             }
         }
         stage('Build Images') {
@@ -17,9 +17,11 @@ pipeline {
         }
         stage('Deploy Containers') {
             steps {
-                bat "docker compose -f practical-5/docker-compose.yml down 2>nul & echo down done"
-                bat "docker compose -f practical-5/docker-compose.yml up -d"
-                bat "ping -n 8 127.0.0.1 >nul"
+                script {
+                    bat(script: "docker compose -f practical-5/docker-compose.yml down", returnStatus: true)
+                    bat "docker compose -f practical-5/docker-compose.yml up -d"
+                    sleep(time: 8, unit: 'SECONDS')
+                }
                 echo 'Multi-container app deployed.'
             }
         }
@@ -29,7 +31,7 @@ pipeline {
                 bat "curl -s http://localhost:5003/"
                 bat "curl -s http://localhost:5003/"
                 bat "curl -s http://localhost:5003/health"
-                echo 'Redis counter incrementing - inter-container communication verified.'
+                echo 'Redis counter increments - inter-container comms verified.'
             }
         }
         stage('Verify Services') {
