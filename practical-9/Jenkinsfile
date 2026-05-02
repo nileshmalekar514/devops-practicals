@@ -1,5 +1,11 @@
 pipeline {
     agent any
+    environment {
+        TF                    = "C:\\ProgramData\\terraform.exe"
+        AWS_ACCESS_KEY_ID     = "AKIAIOSFODNN7EXAMPLE"
+        AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+        AWS_DEFAULT_REGION    = "ap-south-1"
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -11,19 +17,19 @@ pipeline {
         }
         stage('Terraform Init') {
             steps {
-                bat "terraform -chdir=practical-9 init -input=false"
+                bat "%TF% -chdir=practical-9 init -input=false"
                 echo 'Terraform initialized.'
             }
         }
         stage('Terraform Validate') {
             steps {
-                bat "terraform -chdir=practical-9 validate"
+                bat "%TF% -chdir=practical-9 validate"
                 echo 'Terraform config valid.'
             }
         }
         stage('Terraform Plan') {
             steps {
-                bat "terraform -chdir=practical-9 plan -input=false -no-color 2>&1"
+                bat "%TF% -chdir=practical-9 plan -input=false -no-color"
                 echo 'Terraform plan: EC2 + S3 + Security Group ready to provision.'
             }
         }
