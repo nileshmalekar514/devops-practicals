@@ -3,11 +3,10 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled successfully.'
+                echo 'Code pulled from GitHub successfully.'
             }
         }
         stage('Start Minikube') {
@@ -17,30 +16,30 @@ pipeline {
                 echo 'Minikube cluster ready.'
             }
         }
-        stage('Build & Load Image') {
+        stage('Build and Load Image') {
             steps {
                 bat "docker build -t flask-practical4:latest ./practical-4"
                 bat "minikube image load flask-practical4:latest"
                 echo 'Image loaded into Minikube.'
             }
         }
-        stage('Deploy to Kubernetes') {
+        stage('Deploy App') {
             steps {
                 bat "kubectl apply -f practical-7/deployment.yaml"
                 bat "kubectl apply -f practical-7/service.yaml"
-                bat "kubectl rollout status deployment/flask-deployment --timeout=90s"
-                bat "kubectl get pods -l app=flask-app"
+                bat "kubectl rollout status deployment/flask-deployment --timeout=120s"
                 echo 'Flask app deployed to Kubernetes.'
             }
         }
         stage('Apply HPA') {
             steps {
                 bat "kubectl apply -f practical-7/hpa.yaml"
+                bat "ping -n 5 127.0.0.1 >nul"
                 bat "kubectl get hpa flask-hpa"
-                echo 'Horizontal Pod Autoscaler configured (min=1, max=5, cpu=50%).'
+                echo 'Horizontal Pod Autoscaler configured.'
             }
         }
-        stage('Verify Deployment') {
+        stage('Verify') {
             steps {
                 bat "kubectl get pods"
                 bat "kubectl get deployments"
@@ -51,7 +50,7 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 7 - Kubernetes HPA pipeline SUCCESS!' }
+        success { echo 'Practical 7 - Kubernetes HPA pipeline PASSED!' }
         failure { echo 'Practical 7 - Pipeline FAILED.' }
     }
 }

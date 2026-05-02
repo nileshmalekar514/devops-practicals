@@ -3,45 +3,44 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled successfully.'
+                echo 'Code pulled from GitHub successfully.'
             }
         }
         stage('Build Original Image') {
             steps {
                 bat "docker build -f practical-6/Dockerfile.original -t flask-original:latest ./practical-6"
-                echo 'Original image built (large size).'
+                echo 'Original image built.'
             }
         }
         stage('Build Optimized Image') {
             steps {
                 bat "docker build -f practical-6/Dockerfile.optimized -t flask-optimized:latest ./practical-6"
-                echo 'Optimized image built (small size).'
+                echo 'Optimized image built.'
             }
         }
         stage('Compare Image Sizes') {
             steps {
-                bat "docker images flask-original flask-optimized --format \"table {{.Repository}}\\t{{.Tag}}\\t{{.Size}}\""
-                echo 'Size comparison complete - optimized image is significantly smaller!'
+                bat "docker images flask-original"
+                bat "docker images flask-optimized"
+                echo 'Size comparison done - optimized is much smaller!'
             }
         }
         stage('Test Optimized Image') {
             steps {
-                bat "docker stop flask_p6 2>nul || echo not running"
-                bat "docker rm   flask_p6 2>nul || echo not found"
+                bat "docker stop flask_p6 2>nul & docker rm flask_p6 2>nul & echo cleanup done"
                 bat "docker run -d -p 5004:5000 --name flask_p6 flask-optimized:latest"
-                bat "ping -n 4 127.0.0.1 >nul"
+                bat "ping -n 5 127.0.0.1 >nul"
                 bat "curl -s http://localhost:5004/"
-                bat "docker stop flask_p6 && docker rm flask_p6"
-                echo 'Optimized image tested successfully.'
+                bat "docker stop flask_p6 & docker rm flask_p6"
+                echo 'Optimized image tested.'
             }
         }
     }
     post {
-        success { echo 'Practical 6 - Docker Image Optimization pipeline SUCCESS!' }
+        success { echo 'Practical 6 - Docker Optimization pipeline PASSED!' }
         failure { echo 'Practical 6 - Pipeline FAILED.' }
     }
 }

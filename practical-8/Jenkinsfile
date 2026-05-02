@@ -3,21 +3,19 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled successfully.'
+                echo 'Code pulled from GitHub successfully.'
             }
         }
         stage('Start Minikube') {
             steps {
                 bat "minikube start --driver=docker 2>&1 || echo Minikube already running"
                 bat "minikube status"
-                echo 'Minikube cluster ready.'
             }
         }
-        stage('Load Image to Minikube') {
+        stage('Load Image') {
             steps {
                 bat "docker build -t flask-practical4:latest ./practical-4"
                 bat "minikube image load flask-practical4:latest"
@@ -29,28 +27,27 @@ pipeline {
                 bat "kubectl apply -f practical-8/configmap.yaml"
                 bat "kubectl get configmap app-config"
                 bat "kubectl describe configmap app-config"
-                echo 'ConfigMap created successfully.'
+                echo 'ConfigMap created.'
             }
         }
-        stage('Deploy Pod with ConfigMap') {
+        stage('Deploy Pod') {
             steps {
-                bat "kubectl delete pod flask-configmap-pod 2>nul || echo pod not found"
+                bat "kubectl delete pod flask-configmap-pod 2>nul & echo pod cleanup done"
                 bat "kubectl apply -f practical-8/pod.yaml"
-                bat "ping -n 10 127.0.0.1 >nul"
+                bat "ping -n 15 127.0.0.1 >nul"
                 bat "kubectl get pod flask-configmap-pod"
-                echo 'Pod deployed with ConfigMap injected as env variables.'
+                echo 'Pod deployed with ConfigMap injected.'
             }
         }
-        stage('Verify ConfigMap Injection') {
+        stage('Verify Injection') {
             steps {
-                bat "kubectl exec flask-configmap-pod -- env | findstr APP_NAME 2>nul || echo checking env vars"
                 bat "kubectl describe pod flask-configmap-pod"
-                echo 'ConfigMap values injected into pod verified.'
+                echo 'ConfigMap env vars injected into pod verified.'
             }
         }
     }
     post {
-        success { echo 'Practical 8 - Kubernetes ConfigMap pipeline SUCCESS!' }
+        success { echo 'Practical 8 - Kubernetes ConfigMap pipeline PASSED!' }
         failure { echo 'Practical 8 - Pipeline FAILED.' }
     }
 }

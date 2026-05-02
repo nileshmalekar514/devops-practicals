@@ -8,26 +8,24 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled successfully.'
+                echo 'Code pulled from GitHub successfully.'
             }
         }
         stage('Build Docker Image') {
             steps {
                 bat "docker build -t %IMAGE_NAME%:latest ./practical-4"
-                echo 'Docker image built successfully.'
+                echo 'Docker image built.'
             }
         }
         stage('Run Container') {
             steps {
-                bat "docker stop %CONTAINER% 2>nul || echo container not running"
-                bat "docker rm   %CONTAINER% 2>nul || echo container not found"
+                bat "docker stop %CONTAINER% 2>nul & docker rm %CONTAINER% 2>nul & echo cleanup done"
                 bat "docker run -d -p %PORT%:5000 --name %CONTAINER% %IMAGE_NAME%:latest"
-                bat "ping -n 4 127.0.0.1 >nul"
-                echo 'Container started on port 5002.'
+                bat "ping -n 6 127.0.0.1 >nul"
+                echo 'Container running on port 5002.'
             }
         }
         stage('Test Endpoints') {
@@ -35,19 +33,18 @@ pipeline {
                 bat "curl -s http://localhost:%PORT%/"
                 bat "curl -s http://localhost:%PORT%/health"
                 bat "curl -s http://localhost:%PORT%/info"
-                echo 'All endpoints tested successfully.'
+                echo 'All 3 endpoints responding.'
             }
         }
         stage('Cleanup') {
             steps {
-                bat "docker stop %CONTAINER%"
-                bat "docker rm   %CONTAINER%"
+                bat "docker stop %CONTAINER% & docker rm %CONTAINER%"
                 echo 'Container cleaned up.'
             }
         }
     }
     post {
-        success { echo 'Practical 4 - Docker Flask pipeline SUCCESS!' }
+        success { echo 'Practical 4 - Docker Flask pipeline PASSED!' }
         failure { echo 'Practical 4 - Pipeline FAILED.' }
     }
 }

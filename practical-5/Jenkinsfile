@@ -3,24 +3,23 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled successfully.'
+                echo 'Code pulled from GitHub successfully.'
             }
         }
         stage('Build Images') {
             steps {
                 bat "docker compose -f practical-5/docker-compose.yml build --no-cache"
-                echo 'Docker images built successfully.'
+                echo 'Docker images built.'
             }
         }
         stage('Deploy Containers') {
             steps {
-                bat "docker compose -f practical-5/docker-compose.yml down --remove-orphans 2>nul || echo already down"
+                bat "docker compose -f practical-5/docker-compose.yml down 2>nul & echo down done"
                 bat "docker compose -f practical-5/docker-compose.yml up -d"
-                bat "ping -n 5 127.0.0.1 >nul"
+                bat "ping -n 8 127.0.0.1 >nul"
                 echo 'Multi-container app deployed.'
             }
         }
@@ -36,18 +35,17 @@ pipeline {
         stage('Verify Services') {
             steps {
                 bat "docker compose -f practical-5/docker-compose.yml ps"
-                echo 'Both flask_web and redis_cache running.'
             }
         }
         stage('Cleanup') {
             steps {
                 bat "docker compose -f practical-5/docker-compose.yml down"
-                echo 'Containers stopped and removed.'
+                echo 'Containers stopped.'
             }
         }
     }
     post {
-        success { echo 'Practical 5 - Docker Compose pipeline SUCCESS!' }
+        success { echo 'Practical 5 - Docker Compose pipeline PASSED!' }
         failure { echo 'Practical 5 - Pipeline FAILED.' }
     }
 }

@@ -3,40 +3,33 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling code from GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/nileshmalekar514/devops-practicals.git',
                     credentialsId: 'github-creds'
-                echo 'Code pulled successfully.'
+                echo 'Code pulled from GitHub successfully.'
             }
         }
         stage('Terraform Init') {
             steps {
-                bat "terraform -chdir=practical-10 init"
-                echo 'Terraform initialized - AWS provider ready.'
+                bat "terraform -chdir=practical-10 init -input=false"
+                echo 'Terraform initialized.'
             }
         }
         stage('Terraform Validate') {
             steps {
                 bat "terraform -chdir=practical-10 validate"
-                echo 'VPC configuration valid.'
+                echo 'Terraform VPC config valid.'
             }
         }
         stage('Terraform Plan') {
             steps {
-                bat "terraform -chdir=practical-10 plan -out=tfplan"
-                echo 'Terraform plan: VPC + public subnet + private subnet + IGW + NAT GW.'
-            }
-        }
-        stage('Show Plan Summary') {
-            steps {
-                bat "terraform -chdir=practical-10 show tfplan"
-                echo 'Plan summary: 8 resources to be created (VPC, subnets, IGW, NAT, route tables).'
+                bat "terraform -chdir=practical-10 plan -input=false -no-color 2>&1"
+                echo 'Terraform plan: VPC + subnets + IGW + NAT Gateway ready.'
             }
         }
     }
     post {
-        success { echo 'Practical 10 - Terraform VPC pipeline SUCCESS!' }
+        success { echo 'Practical 10 - Terraform VPC pipeline PASSED!' }
         failure { echo 'Practical 10 - Pipeline FAILED.' }
     }
 }
