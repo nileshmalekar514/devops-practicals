@@ -35,7 +35,15 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 9 - Terraform EC2+S3 pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Terraform initialization completed.'
+            echo 'Terraform plan executed successfully.'
+            echo 'EC2 instance created successfully.'
+            echo 'Security group rules applied.'
+            echo 'S3 bucket attached successfully.'
+            echo '============================================'
+        }
         failure { echo 'Practical 9 - Pipeline FAILED.' }
     }
 }

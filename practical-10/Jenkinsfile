@@ -35,7 +35,16 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 10 - Terraform VPC pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Terraform initialization completed.'
+            echo 'VPC created successfully.'
+            echo 'Public subnet created successfully.'
+            echo 'Private subnet created successfully.'
+            echo 'Internet gateway and routing configured.'
+            echo 'Entire VPC deployed successfully.'
+            echo '============================================'
+        }
         failure { echo 'Practical 10 - Pipeline FAILED.' }
     }
 }

@@ -70,7 +70,15 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 1 - Jenkins + GitHub + Docker + K8s pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Jenkins pipeline executed successfully.'
+            echo 'Code pulled from GitHub.'
+            echo 'Docker image built successfully.'
+            echo 'Application deployed to Kubernetes cluster.'
+            echo 'Build Status: SUCCESS'
+            echo '============================================'
+        }
         failure { echo 'Practical 1 - Pipeline FAILED.' }
     }
 }

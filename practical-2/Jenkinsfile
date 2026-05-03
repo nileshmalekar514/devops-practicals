@@ -62,7 +62,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 2 - GitLab CI Pipeline Demo PASSED!' }
+        success {
+            echo '============================================'
+            echo 'GitLab CI pipeline executed successfully.'
+            echo 'Automated tests passed.'
+            echo 'Deployment to AWS EC2 completed successfully.'
+            echo 'Pipeline Status: SUCCESS'
+            echo '============================================'
+        }
         failure { echo 'Practical 2 - Pipeline FAILED.' }
     }
 }

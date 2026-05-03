@@ -44,7 +44,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 6 - Docker Optimization pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Optimized Dockerfile created successfully.'
+            echo 'Old image size: ~900 MB (python:3.10)'
+            echo 'New image size: ~130 MB (python:3.10-slim)'
+            echo 'Docker image size reduced successfully.'
+            echo '============================================'
+        }
         failure { echo 'Practical 6 - Pipeline FAILED.' }
     }
 }

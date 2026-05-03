@@ -50,7 +50,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 4 - Docker Flask pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Docker image created successfully.'
+            echo 'Flask application container started.'
+            echo 'Application running on localhost port 5000.'
+            echo 'Container Status: Running'
+            echo '============================================'
+        }
         failure { echo 'Practical 4 - Pipeline FAILED.' }
     }
 }

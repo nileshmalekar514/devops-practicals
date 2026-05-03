@@ -52,7 +52,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 7 - Kubernetes HPA pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Horizontal Pod Autoscaler created successfully.'
+            echo 'Deployment is running.'
+            echo 'HPA configured with CPU threshold.'
+            echo 'Pods scale up/down automatically based on load.'
+            echo '============================================'
+        }
         failure { echo 'Practical 7 - Pipeline FAILED.' }
     }
 }

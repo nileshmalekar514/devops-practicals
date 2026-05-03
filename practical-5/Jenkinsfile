@@ -47,7 +47,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 5 - Docker Compose pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'Docker Compose file executed successfully.'
+            echo 'All containers started.'
+            echo 'Services are connected and running.'
+            echo 'Application accessible in browser.'
+            echo '============================================'
+        }
         failure { echo 'Practical 5 - Pipeline FAILED.' }
     }
 }

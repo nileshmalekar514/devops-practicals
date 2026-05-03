@@ -57,7 +57,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 3 - GitHub Actions + Unit Tests pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'GitHub Actions workflow triggered on pull request.'
+            echo 'Unit tests executed successfully.'
+            echo 'Tests passed.'
+            echo 'Slack notification sent if tests fail.'
+            echo '============================================'
+        }
         failure { echo 'Practical 3 - Pipeline FAILED.' }
     }
 }

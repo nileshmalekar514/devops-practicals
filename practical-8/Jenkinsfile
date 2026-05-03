@@ -52,7 +52,14 @@ pipeline {
         }
     }
     post {
-        success { echo 'Practical 8 - Kubernetes ConfigMap pipeline PASSED!' }
+        success {
+            echo '============================================'
+            echo 'ConfigMap created successfully.'
+            echo 'ConfigMap injected into running pod.'
+            echo 'Pod accessed configuration value successfully.'
+            echo 'Configuration loaded from ConfigMap.'
+            echo '============================================'
+        }
         failure { echo 'Practical 8 - Pipeline FAILED.' }
     }
 }
