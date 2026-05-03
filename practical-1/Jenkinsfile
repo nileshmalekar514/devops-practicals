@@ -3,7 +3,7 @@ pipeline {
     environment {
         IMAGE_NAME = "flask-practical1"
         CONTAINER  = "flask_p1"
-        PORT       = "5001"
+        PORT       = "5010"
         KUBECONFIG = "C:\\ProgramData\\kube\\config"
     }
     stages {
