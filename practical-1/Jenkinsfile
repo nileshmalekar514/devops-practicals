@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "flask-practical1"
+        CONTAINER  = "flask_p1"
+        PORT       = "5001"
+        KUBECONFIG = "C:\\ProgramData\\kube\\config"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/nileshmalekar514/devops-practicals.git',
+                    credentialsId: 'github-creds'
+                echo 'Code pulled from GitHub.'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t %IMAGE_NAME%:latest ./practical-1"
+                echo 'Docker image built successfully.'
+            }
+        }
+        stage('Test Container Locally') {
+            steps {
+                script {
+                    bat(script: "docker stop %CONTAINER%", returnStatus: true)
+                    bat(script: "docker rm %CONTAINER%",   returnStatus: true)
+                    bat "docker run -d -p %PORT%:5000 --name %CONTAINER% %IMAGE_NAME%:latest"
+                    sleep(time: 5, unit: 'SECONDS')
+                    bat "curl -s http://localhost:%PORT%/"
+                    bat "curl -s http://localhost:%PORT%/health"
+                }
+                echo 'Container tested locally - endpoints working.'
+            }
+        }
+        stage('Load Image to Minikube') {
+            steps {
+                bat "docker save %IMAGE_NAME%:latest | docker exec -i minikube docker load"
+                echo 'Image loaded into Minikube cluster.'
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    bat(script: "kubectl delete deployment flask-p1-deploy --ignore-not-found", returnStatus: true)
+                }
+                bat "kubectl apply -f practical-1/deployment.yaml"
+                bat "kubectl apply -f practical-1/service.yaml"
+                bat "kubectl rollout status deployment/flask-p1-deploy --timeout=120s"
+                echo 'Application deployed to Kubernetes cluster.'
+            }
+        }
+        stage('Verify Deployment') {
+            steps {
+                bat "kubectl get pods -l app=flask-p1"
+                bat "kubectl get services flask-p1-svc"
+                bat "kubectl get deployments flask-p1-deploy"
+                echo 'Kubernetes deployment verified.'
+            }
+        }
+        stage('Cleanup Local') {
+            steps {
+                script {
+                    bat(script: "docker stop %CONTAINER%", returnStatus: true)
+                    bat(script: "docker rm %CONTAINER%",   returnStatus: true)
+                }
+                echo 'Local container cleaned up.'
+            }
+        }
+    }
+    post {
+        success { echo 'Practical 1 - Jenkins + GitHub + Docker + K8s pipeline PASSED!' }
+        failure { echo 'Practical 1 - Pipeline FAILED.' }
+    }
+}

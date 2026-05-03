@@ -1,0 +1,65 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  IMAGE_NAME: flask-practical2
+  AWS_REGION: ap-south-1
+
+# ---------- STAGE 1: Run automated tests ----------
+test:
+  stage: test
+  image: python:3.10-slim
+  before_script:
+    - pip install -r practical-2/requirements.txt
+    - pip install pytest
+  script:
+    - echo "Running unit tests..."
+    - cd practical-2
+    - python -m pytest test_app.py -v
+  only:
+    - main
+    - merge_requests
+
+# ---------- STAGE 2: Build Docker image ----------
+build:
+  stage: build
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA ./practical-2
+    - docker push $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA
+    - echo "Image pushed to GitLab Container Registry."
+  only:
+    - main
+
+# ---------- STAGE 3: Deploy to AWS EC2 ----------
+deploy:
+  stage: deploy
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update -y && apt-get install -y openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$EC2_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "$EC2_HOST_KEY" >> ~/.ssh/known_hosts
+  script:
+    - echo "Deploying to AWS EC2 instance..."
+    - ssh ubuntu@$EC2_HOST "
+        docker pull $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA &&
+        docker stop flask-app || true &&
+        docker rm flask-app || true &&
+        docker run -d -p 5000:5000 --name flask-app $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA &&
+        echo 'Deployment successful!'
+      "
+  environment:
+    name: production
+    url: http://$EC2_HOST:5000
+  only:
+    - main
+  when: on_success

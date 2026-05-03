@@ -1,0 +1,70 @@
+name: PR Test & Slack Notify
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r practical-3/requirements.txt
+          pip install pytest
+
+      - name: Run Unit Tests
+        run: |
+          cd practical-3
+          python -m pytest test_app.py -v
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "Tests FAILED on PR #${{ github.event.pull_request.number }} by ${{ github.actor }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *Test Failure* in `${{ github.repository }}`\n*Branch:* `${{ github.head_ref }}`\n*Author:* ${{ github.actor }}\n*Commit:* `${{ github.sha }}`\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
+                  }
+                }
+              ]
+            }
+
+      - name: Notify Slack on Success
+        if: success()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "All tests PASSED for PR #${{ github.event.pull_request.number }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark: *All Tests Passed* in `${{ github.repository }}`\n*Branch:* `${{ github.head_ref || github.ref_name }}`\n*Author:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
