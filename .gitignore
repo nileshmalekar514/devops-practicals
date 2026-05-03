@@ -1,6 +1,8 @@
 # Temp files
 *.txt.bak
 jenkins_*.txt
+jc*.txt
+jkc.txt
 
 # Python
 __pycache__/
